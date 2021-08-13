@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using SignalRChat.Core.Utilities;
+using SignalRChat.Data.Abstract;
 using SignalRChat.Models;
 using System;
 using System.Collections.Generic;
@@ -11,16 +13,34 @@ namespace SignalRChat.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
-
-        public HomeController(ILogger<HomeController> logger)
+        private readonly IUserService _userService;
+        private readonly IMessageService _messageService;
+        public HomeController(IUserService userService, IMessageService messageService)
         {
-            _logger = logger;
+            _userService = userService;
+            _messageService = messageService;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             return View();
+        }
+
+        public async Task<IActionResult> CreateMessage(MessageModel message)
+        {
+            if (ModelState.IsValid)
+            {
+                var data = _messageService.CreateMessage(new Data.Model.Message()
+                {
+                    ReceiverId = message.ReceiverId,
+                    SenderId = message.SenderId,
+                    State = (byte)Enums.StateEnum.Active,
+                    Text = message.Text,
+                    CreatedOn = DateTime.Now,
+                });
+                return Ok();
+            }
+            return Error();
         }
 
         public IActionResult Privacy()

@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SignalRChat.Data\SignalRChat.Data.csproj" />
+    <ProjectReference Include="..\SignalRChat.Entity\SignalRChat.Entity.csproj" />
+  </ItemGroup>
+
+</Project>

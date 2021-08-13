@@ -1,0 +1,168 @@
+﻿@using System
+@using Microsoft.Extensions.Options
+
+@using SignalRChat.Core.Utilities
+@model SignalRChat.Models.LoginViewModel
+
+@{
+    Layout = null;
+}
+@{
+    string Images = "Images";
+    string TemplateUI = "TemplateUI";
+}
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+
+    <title>XYZ Okul | Giriş</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="description" content="" />
+    <meta name="keywords" content="">
+    <meta name="author" content="Phoenixcoded" />
+    <link rel="icon" href="~/@TemplateUI/base/images/favicon.ico" type="image/x-icon">
+    <link href="~/@TemplateUI/base/css/plugins/PNotifyBrightTheme.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/@TemplateUI/base/css/style.css">
+
+    <script src="~/@TemplateUI/global/vendor/jquery/jquery.js"></script>
+    <script src="~/@TemplateUI/global/vendor/jquery-ui/jquery-ui.js"></script>
+    <script src="~/@TemplateUI/global/vendor/breakpoints/breakpoints.js"></script>
+    <script>
+        Breakpoints();
+    </script>
+</head>
+<body>
+    <div class="auth-wrapper">
+        <div class="auth-content">
+            <div class="card">
+                <div class="row align-items-center text-center">
+                    <div class="col-md-12">
+                        <div class="card-body">
+                            <img src="~/@Images/header-logo.png" alt="" class="img-fluid mb-4">
+                            <h4 class="mb-3 f-w-400">Giriş Yap</h4>
+                            <form id="LoginForm" method="post">
+                                <input type="hidden" id="ReturnUrl" name="ReturnUrl" @*value="@Request[" ReturnUrl"]"*@>
+                                <div class="form-group mb-3">
+                                    <label class="floating-label" for="UserName">Email / Kullanıcı Adı</label>
+                                    <input type="text" class="form-control" name="UserName" id="UserName" placeholder="">
+                                </div>
+                                <div class="form-group mb-4">
+                                    <label class="floating-label" for="Password">Şifre</label>
+                                    <input type="password" class="form-control" name="Password" id="Password" placeholder="">
+                                </div>
+                                @*<div class="custom-control custom-checkbox text-left mb-4 mt-2">
+                                        <input type="checkbox" class="custom-control-input" id="customCheck1">
+                                        <label class="custom-control-label" for="customCheck1">Save credentials.</label>
+                                    </div>*@
+                                <button type="submit" id="btn-submit" class="btn btn-block btn-primary mb-4">Oturum Aç</button>
+                                @*<p class="mb-2 text-muted">Forgot password? <a href="auth-reset-password.html" class="f-w-400">Reset</a></p>*@
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="~/@TemplateUI/base/js/vendor-all.min.js"></script>
+    <script src="~/@TemplateUI/global/vendor/bootstrap/bootstrap.js"></script>
+    <script src="~/@TemplateUI/base/js/ripple.js"></script>
+    <script src="~/@TemplateUI/base/js/pcoded.min.js"></script>
+
+    <!-- Notification -->
+    <script src="~/@TemplateUI/base/js/plugins/bootstrap-notify.min.js"></script>
+    <script src="~/@TemplateUI/base/js/pages/ac-notification.js"></script>
+
+    <script src="~/@TemplateUI/base/js/plugins/PNotify.js"></script>
+
+
+    <!-- jquery-validation Js -->
+    <script src="~/@TemplateUI/base/js/plugins/jquery.validate.min.js"></script>
+    <script src="~/@TemplateUI/base/js/pages/form-validation.js"></script>
+    <script src="~/@TemplateUI/base/form-validation.js"></script>
+    <script>
+        $(function () {
+            $('#LoginForm').validate({
+                focusInvalid: false,
+                lang: 'tr',
+                rules: {
+                    'UserName': {
+                        required: true,
+                    },
+                    'Password': {
+                        required: true
+                    }
+                },
+
+                errorPlacement: function errorPlacement(error, element) {
+                    var $parent = $(element).parents('.form-group');
+
+                    if ($parent.find('.jquery-validation-error').length) {
+                        return;
+                    }
+
+                    $parent.append(
+                        error.addClass('jquery-validation-error small form-text invalid-feedback')
+                    );
+                },
+
+                highlight: function (element) {
+                    var $el = $(element);
+                    $el.addClass('is-invalid');
+                },
+
+                unhighlight: function (element) {
+                    $(element).parents('.form-group').find('.is-invalid').removeClass('is-invalid');
+                },
+
+                submitHandler: function (form) {
+                    $.ajax({
+                        type: "post",
+                        dataType: "json",
+                        data: $(form).serialize(),
+                        url: '/User/Login',
+                        success: function (result) {
+                            if (result.ActionStatus == '@Enums.StatusEnum.Successful') {
+                                PNotify.alert({
+                                    title: 'İşlem Başarılı',
+                                    text: result.ActionMessage,
+                                    type: 'success'
+                                });
+                                location.href = result.ReturnUrl;
+                            }
+                            else {
+                                PNotify.alert({
+                                    title: 'İşlem Başarısız',
+                                    text: result.ActionMessage,
+                                    type: 'error'
+                                });
+                            }
+                        },
+                        error: function () {
+                            PNotify.alert({
+                                title: 'İşlem Başarısız',
+                                text: 'Üzgünüz Bir Hata Oluştu.',
+                                type: 'error'
+                            });
+                        },
+                        beforeSend: function () {
+                            PNotify.alert({
+                                title: 'Giriş yapılıyor',
+                                text: 'Lütfen Bekleyiniz.',
+                            });
+                        }
+                    });
+                    $('#btn-submit').prop("disabled", false);
+                    $('#btn-submit').removeClass("disabled");
+                },
+
+            });
+
+        });
+    </script>
+
+
+</body>
+</html>
